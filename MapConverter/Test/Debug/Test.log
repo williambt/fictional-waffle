@@ -1,0 +1,5 @@
+﻿  main.cpp
+c:\users\willn\desktop\lixo\c++\projects\test\test\main.cpp(74): warning C4018: '<': signed/unsigned mismatch
+c:\users\willn\desktop\lixo\c++\projects\test\test\main.cpp(134): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\willn\desktop\lixo\c++\projects\test\test\main.cpp(169): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  Test.vcxproj -> C:\Users\willn\Desktop\Lixo\c++\Projects\Test\Debug\Test.exe
