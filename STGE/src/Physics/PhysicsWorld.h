@@ -36,7 +36,7 @@ public:
 		timeStep = 1.0f / 60.0f;
 	}
 
-	void AddObject(GameObject* object, bool isStatic = false, uint16 category = 0, uint16 mask = 0xffff)
+	void AddObject(GameObject* object, float density = 1.0f, bool isStatic = false, uint16 category = 0, uint16 mask = 0xffff)
 	{
 		b2BodyDef bodyDef;
 		bodyDef.type = isStatic ? b2_staticBody : b2_dynamicBody;
@@ -66,7 +66,7 @@ public:
 			}
 			b2FixtureDef fixtureDef;
 			fixtureDef.shape = bShape;
-			fixtureDef.density = 1.0f;
+			fixtureDef.density = density;
 			if (category > 0)
 			{
 				fixtureDef.filter.categoryBits = category;
@@ -121,6 +121,24 @@ public:
 		jointDef.collideConnected = collideConnected;
 
 		b2RevoluteJoint* joint = (b2RevoluteJoint*)_world->CreateJoint(&jointDef);
+		obj1->GetPhysicsBody()->_joints.push_back(joint);
+		obj2->GetPhysicsBody()->_joints.push_back(joint);
+	}
+
+	void CreateRopeJoint(GameObject* obj1, GameObject* obj2, float maxLength, glm::vec2 anchor1 = glm::vec2(0), glm::vec2 anchor2 = glm::vec2(0), bool collideConnected = false)
+	{
+		b2Body* b1 = obj1->GetPhysicsBody()->GetB2Body();
+		b2Body* b2 = obj2->GetPhysicsBody()->GetB2Body();
+
+		b2RopeJointDef jointDef;
+		jointDef.bodyA = b1;
+		jointDef.bodyB = b2;
+		jointDef.localAnchorA = glmTob2(anchor1);
+		jointDef.localAnchorB = glmTob2(anchor2);
+		jointDef.collideConnected = collideConnected;
+		jointDef.maxLength = maxLength;
+
+		b2RopeJoint* joint = (b2RopeJoint*)_world->CreateJoint(&jointDef);
 		obj1->GetPhysicsBody()->_joints.push_back(joint);
 		obj2->GetPhysicsBody()->_joints.push_back(joint);
 	}

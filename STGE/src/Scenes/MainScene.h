@@ -4,10 +4,16 @@
 #include "../Rendering/Shapes/Quad.h"
 
 #include "../MapReader.h"
+#include <string>
 
 class MainScene : public Scene
 {
 private:
+
+	static const int _mapNbr = 3;
+	std::string _maps[_mapNbr] = { "res/test.mlo", "res/test2.mlo", "res/test3.mlo" };
+	int _currMap = 0;
+	std::vector<GameObject*> _mapObjects;
 
 	GameObject * _player;
 
@@ -30,45 +36,50 @@ private:
 		PLAYER = 0x0002
 	};
 
-	float _jumpForce = 5000;
-	float _moveForce = 300;
+	float _jumpForce = 6000;
+	float _moveForce = 200;
 	bool _canJump = false;
 
 	
-	float _chainLength = 0.5f;
+	float _chainLength = 0.33f;
 	void CreateChain()
 	{
 		glm::vec2 ptog = _grapple->GetPosition() - _player->GetPosition();
-		int nOfChains = glm::length(ptog) / _chainLength;
+		int nOfChains = glm::length(ptog) / _chainLength + 1;
 
 		ptog = ptog / (float)nOfChains;
 		for (int i = 0; i < nOfChains; ++i)
 		{
 			GameObject* c = new GameObject();
-			c->AddShape(new Quad(), glm::vec3(0), 0, glm::vec2(_chainLength, 0.139f));
+			c->AddShape(new Circle(), glm::vec3(0), 0, glm::vec2(_chainLength/2.0f));
 			c->SetColour(glm::vec3(0.38f, 0.61f, 0.0f));
 			c->SetPosition(glm::vec2(_player->GetPosition()) + (ptog * (float)i));
-			_world.AddObject(c, false, WORLD, WORLD);
+			_world.AddObject(c, 1.0f, false, WORLD, WORLD);
 
-			c->GetPhysicsBody()->SetMass(-1);
+			c->GetPhysicsBody()->SetMass(1);
 			//c->GetPhysicsBody()->GetB2Body()->SetGravityScale(0.1f);
-
 
 			if (i == 0)
 			{
-				_world.CreateRevoluteJoint(_player, c, glm::vec2(0), glm::vec2(-0.25f, 0.0f));
-			}
-			else
-			{
-				_world.CreateRevoluteJoint(c, _grappleChain.back(), glm::vec2(-0.25f, 0.0f), glm::vec2(0.25f, 0.0f));
+				_world.CreateRevoluteJoint(_player, c, glm::vec2(0), glm::vec2(-_chainLength/2.0f, 0.0f));
 			}
 			if (i == nOfChains - 1)
 			{
-				_world.CreateRevoluteJoint(_grapple, c, glm::vec2(0), glm::vec2(0.25f, 0.0f));
+				_world.CreateRopeJoint(_grapple, c, glm::length(c->GetPosition() - _grapple->GetPosition()), glm::vec2(0), glm::vec2(0.0f, 0.0f));
 			}
 
 			_grappleChain.push_back(c);
 			_gameObjects.push_back(c);
+		}
+		for (int i = 0; i < _grappleChain.size(); ++i)
+		{
+			for (int j = 0; j < _grappleChain.size(); ++j)
+			{
+				if (i != j)
+				{
+					_world.CreateRopeJoint(_grappleChain[j], _grappleChain[i], glm::length(_grappleChain[i]->GetPosition() - _grappleChain[j]->GetPosition()), glm::vec2(0), glm::vec2(0));
+				}
+			}
 		}
 	}
 	void DestroyChain()
@@ -82,6 +93,27 @@ private:
 		_grappleChain.clear();
 	}
 
+	void LoadMap()
+	{
+		if (_currMap >= _mapNbr) _currMap = _mapNbr -1;
+		else if(_currMap < 0) _currMap = 0;
+		_mapObjects = readMLO(_maps[_currMap], _world);
+		for (GameObject* go : _mapObjects)
+		{
+			_gameObjects.push_back(go);
+		}
+	}
+
+	void DeleteMap()
+	{
+		for (GameObject* go : _mapObjects)
+		{
+			RemoveGameObject(go);
+			delete go;
+		}
+		_mapObjects.clear();
+	}
+
 public:
 
 	MainScene(Window& window) : Scene(window) {}
@@ -89,7 +121,8 @@ public:
 
 	virtual void Setup()
 	{
-		_gameObjects = readMLO("res/test2.mlo", _world);
+		std::cout << _maps[0] << ": " << _mapNbr << std::endl;
+		LoadMap();
 		
 		_gameObjects.push_back(new GameObject());
 
@@ -97,10 +130,10 @@ public:
 		_player->AddShape(new Quad(), glm::vec3(0), 0, glm::vec3(1, 2, 1)/2.0f);
 		_player->AddShape(new Circle(), glm::vec3(0, 1, 0)/2.0f, 0, glm::vec3(0.25f));
 		_player->AddShape(new Circle(), glm::vec3(0, -1, 0)/2.0f, 0, glm::vec3(0.25f), "feet");
-		_world.AddObject(_player, false , PLAYER);
+		_world.AddObject(_player, 1.0f, false , PLAYER);
 
 		_player->GetPhysicsBody()->LockRotation(true);
-		_player->GetPhysicsBody()->SetMass(10);
+		_player->GetPhysicsBody()->SetMass(1);
 	}
 
 	virtual void Update()
@@ -167,13 +200,26 @@ public:
 		if (!grounded)
 			_canJump = false;
 
+		if (Input::GetKeyPressed(GLFW_KEY_LEFT))
+		{
+			DeleteMap();
+			--_currMap;
+			LoadMap();
+		} 
+		else if (Input::GetKeyPressed(GLFW_KEY_RIGHT))
+		{
+			DeleteMap();
+			++_currMap;
+			LoadMap();
+		}
+
 		if (Input::GetMButtonPressed(GLFW_MOUSE_BUTTON_1) && !_grapple)
 		{
 			_grapple = new GameObject();
 			_grapple->AddShape(new Circle(), glm::vec3(0), 0, glm::vec2(0.25f));
 			_grapple->SetPosition(_player->GetPosition());
 			_grapple->SetColour(glm::vec3(0.4f));
-			_world.AddObject(_grapple, false, WORLD, WORLD);
+			_world.AddObject(_grapple, 1.0f, false, WORLD, WORLD);
 			_gameObjects.push_back(_grapple);
 
 			glm::vec2 ptom = window.ScreenToWorld(Input::GetMousePos()) - glm::vec2(_player->GetPosition());
@@ -203,10 +249,10 @@ public:
 			if (manifold.points[0] != b2Vec2(0, 0))
 			{
 				manifold.points[0].Set(manifold.points[0].x - other->GetPosition().x, manifold.points[0].y - other->GetPosition().y);
-				float angle = glm::radians(other->GetRotation());
+				float angle = glm::radians(-other->GetRotation());
 				manifold.points[0].Set(cosf(angle) * manifold.points[0].x - sinf(angle) * manifold.points[0].y,
 					sinf(angle) * manifold.points[0].x + cosf(angle) * manifold.points[0].y);
-				_world.CreateRevoluteJoint(_grapple, other, glm::vec2(0), b2Toglm(manifold.points[0]) - glm::vec2(other->GetPosition()));
+				_world.CreateRevoluteJoint(_grapple, other, glm::vec2(0), b2Toglm(manifold.points[0]));
 				CreateChain();
 				_shooting = false;
 				break;
@@ -242,7 +288,7 @@ public:
 
 		if (_shooting && _grapple)
 		{
-			glLineWidth(5);
+			glLineWidth(_chainLength/(window.GetWorldBounds().right - window.GetWorldBounds().left) * window.GetWidth());
 			Shader::GetBasic()->Uniform3f("colour", glm::vec3(0.38f, 0.61f, 0.0f));
 			Shader::GetBasic()->UniformMat4f("modelMat", glm::mat4(1));
 			glBegin(GL_LINES);

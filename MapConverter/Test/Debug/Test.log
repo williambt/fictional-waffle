@@ -1,5 +1,6 @@
 ﻿  main.cpp
-c:\users\willn\desktop\lixo\c++\projects\test\test\main.cpp(74): warning C4018: '<': signed/unsigned mismatch
-c:\users\willn\desktop\lixo\c++\projects\test\test\main.cpp(134): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-c:\users\willn\desktop\lixo\c++\projects\test\test\main.cpp(169): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-  Test.vcxproj -> C:\Users\willn\Desktop\Lixo\c++\Projects\Test\Debug\Test.exe
+c:\temp\fictional-waffle\mapconverter\test\main.cpp(74): warning C4018: '<': incompatibilidade de signed/unsigned
+c:\temp\fictional-waffle\mapconverter\test\main.cpp(134): warning C4244: 'argumento': conversão de 'int' para 'float', possível perda de dados
+c:\temp\fictional-waffle\mapconverter\test\main.cpp(169): warning C4244: 'argumento': conversão de 'int' para 'float', possível perda de dados
+  Test.vcxproj -> C:\Temp\fictional-waffle\MapConverter\Debug\Test.exe
+  Test.vcxproj -> C:\Temp\fictional-waffle\MapConverter\Debug\Test.pdb (Partial PDB)

@@ -86,7 +86,7 @@ std::ofstream file;
 int main()
 {
 	int comp;
-	unsigned char* stbPixels = stbi_load("test2.png", &width, &height, &comp, 3);
+	unsigned char* stbPixels = stbi_load("test3.png", &width, &height, &comp, 3);
 	if ((float)width / (float)height != 16.0f / 9.0f)
 	{
 		std::cout << "Wrong ratio!" << std::endl;
@@ -98,7 +98,7 @@ int main()
 	wb.left *= ratio;
 	wb.right *= ratio;
 
-	file.open("test2.mlo", std::ofstream::out | std::ofstream::trunc);
+	file.open("test3.mlo", std::ofstream::out | std::ofstream::trunc);
 
 	Colour* pixels = ucToColour(stbPixels, width, height);
 

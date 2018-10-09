@@ -35,7 +35,7 @@ static std::vector<GameObject*> readMLO(std::string fileName, PhysicsWorld& pWor
 			go->SetPosition(glm::vec3(p1.x + ((p2.x - p1.x) / 2.0f), p1.y + ((p2.y - p1.y) / 2.0f), 0));
 			go->SetColour(glm::vec3(137.0f / 255.0f));
 
-			pWorld.AddObject(go, true);
+			pWorld.AddObject(go, 2.0f, true);
 			res.push_back(go);
 		}
 		else if (type == "box")
@@ -48,7 +48,7 @@ static std::vector<GameObject*> readMLO(std::string fileName, PhysicsWorld& pWor
 			go->SetPosition(glm::vec3(p1.x + ((p2.x - p1.x) / 2.0f), p1.y + ((p2.y - p1.y) / 2.0f), 0));
 			go->SetColour(glm::vec3(1.0f, 218.0f/255.0f, 0.0f));
 
-			pWorld.AddObject(go);
+			pWorld.AddObject(go, 3.0f);
 			res.push_back(go);
 		}
 	}
